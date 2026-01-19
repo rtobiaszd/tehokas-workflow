@@ -6,12 +6,15 @@ import AppLayout from '../../Layouts/AppLayout.vue';
 const props = defineProps({
     endpoint: { type: String, required: true },
     tokenConfigured: { type: Boolean, default: false },
+    webhookToken: { type: String, default: '' },
 });
 
 const page = usePage();
 const endpointPath = computed(() => props.endpoint || '/api/webhooks/workflows');
 const tenantId = computed(() => 'Global');
-const tokenLabel = computed(() => '************');
+const tokenLabel = computed(() =>
+    props.webhookToken ? props.webhookToken : 'Configure o token nas Settings'
+);
 const absoluteEndpoint = computed(() => {
     const ziggyUrl = page.props.ziggy?.url ?? (typeof window !== 'undefined' ? window.location.origin : '');
     if (!ziggyUrl) {
@@ -28,7 +31,7 @@ const curlExample = computed(() => {
     return [
         `curl -X POST ${absoluteEndpoint.value} \\`,
         '  -H "Content-Type: application/json" \\',
-        '  -H "X-WEBHOOK-TOKEN: {{token}}" \\',
+        `  -H "X-WEBHOOK-TOKEN: ${tokenLabel.value}" \\`,
         `  -H "X-Tenant-ID: ${tenantId.value}" \\`,
         "  -d '{ ... }'",
     ].join('\n');
@@ -74,7 +77,7 @@ const curlExample = computed(() => {
 {{ curlExample }}
                     </pre>
                     <p class="mt-2 text-xs text-[var(--color-muted)]">
-                        Substitua <code v-pre>{{token}}</code> e o corpo do payload pelos valores reais.
+                        Mantenha este token em sigilo. Regere-o nas Settings caso suspeite de vazamento.
                     </p>
                 </div>
             </section>

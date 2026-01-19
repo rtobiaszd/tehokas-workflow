@@ -60,7 +60,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user->isRoot()) {
             return [
-                ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+                ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
                 ['label' => 'Companies', 'href' => '/companies', 'icon' => 'office'],
                 ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
                 ['label' => 'Logs', 'href' => '/logs', 'icon' => 'log'],
@@ -71,7 +71,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user->isAdmin()) {
             return [
-                ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+                ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
                 ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
                 ['label' => 'Webhooks', 'href' => '/webhooks', 'icon' => 'webhook'],
                 ['label' => 'Logs', 'href' => '/logs', 'icon' => 'log'],
@@ -81,7 +81,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         return [
-            ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+            ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
             ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
             ['label' => 'Settings', 'href' => '/settings', 'icon' => 'settings'],
         ];

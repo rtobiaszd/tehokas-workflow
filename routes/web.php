@@ -19,11 +19,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->name('register.store');
 });
 
+Route::redirect('/', '/dashboard');
+
 Route::middleware('auth')->group(function () {
-    Route::get('/', DashboardController::class)->name('dashboard');
-    Route::get('/dashboard', function () {
-        return redirect()->route('dashboard');
-    });
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::post('/tenants/switch', TenantSwitchController::class)->name('tenants.switch');

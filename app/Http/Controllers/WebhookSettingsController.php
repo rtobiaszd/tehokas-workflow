@@ -13,9 +13,12 @@ class WebhookSettingsController extends Controller
     {
         Gate::authorize('view-webhooks');
 
+        $token = (string) $settingService->get('integrations.webhook.token', '');
+
         return Inertia::render('Webhooks/Index', [
             'endpoint' => '/api/webhooks/workflows',
-            'tokenConfigured' => (bool) $settingService->get('integrations.webhook.token'),
+            'tokenConfigured' => (bool) $token,
+            'webhookToken' => $token,
         ]);
     }
 }

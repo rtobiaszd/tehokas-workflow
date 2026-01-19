@@ -18,7 +18,7 @@ const companyName = computed(() => {
 const permissions = computed(() => page.props.permissions ?? {});
 
 const navigationRoutes = {
-    '/': 'dashboard',
+    '/dashboard': 'dashboard',
     '/companies': 'companies.index',
     '/workflows': 'workflows.index',
     '/logs': 'logs.index',
@@ -36,8 +36,8 @@ const resolveNavigationHref = (href) => {
 };
 
 const isActive = (href) => {
-    if (href === '/') {
-        return page.url === '/';
+    if (href === '/dashboard') {
+        return page.url === '/dashboard' || page.url === '/';
     }
 
     return page.url.startsWith(href);

@@ -61,8 +61,8 @@ class EmailDriver implements IntegrationDriverInterface
         $bcc = $payload['bcc'] ?? [];
 
         // 4️⃣ Cria mailer SMTP dinâmico (POR TENANT)
-        $mailerName = 'tenant_smtp_' . $this->tenantSettings->tenantId();
-
+        $tenantId = $this->tenantSettings->getTenant()?->id ?? 'default';
+        $mailerName = 'tenant_smtp_' . $tenantId;
         Config::set("mail.mailers.$mailerName", [
             'transport' => 'smtp',
             'host' => $credentials['host'],

@@ -49,7 +49,42 @@ class HandleInertiaRequests extends Middleware
                     ])->all(),
                 ]
                 : null,
+            'stats' => $this->tenantStats(),
         ]);
+    }
+
+    private function tenantStats(): array
+    {
+        $tenant = app(TenantContext::class)->tenant();
+
+        if (! $tenant) {
+            return [
+                'executions_last_24h' => 0,
+                'failures_last_24h' => 0,
+                'success_percent' => 0,
+            ];
+        }
+
+        $cacheKey = "tenant:{$tenant->id}:stats";
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($tenant) {
+            $executions = $tenant->workflowLogs()
+                ->where('executed_at', '>=', now()->subDay())
+                ->count();
+
+            $failures = $tenant->workflowLogs()
+                ->where('executed_at', '>=', now()->subDay())
+                ->where('status', 'failed')
+                ->count();
+
+            return [
+                'executions_last_24h' => $executions,
+                'failures_last_24h' => $failures,
+                'success_percent' => $executions === 0
+                    ? 0
+                    : max(0, min(100, (int) round((($executions - $failures) / $executions) * 100))),
+            ];
+        });
     }
 
     private function navigationFor($user): array

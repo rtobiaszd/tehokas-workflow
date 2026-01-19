@@ -95,7 +95,24 @@ const iconPaths = {
 
                 <div class="mt-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-xs text-[var(--color-muted)]">
                     <p class="font-semibold text-[var(--color-text)]">Status do tenant</p>
-                    <p class="mt-2">Filas e triggers prontos para processar eventos em tempo real.</p>
+                    <div class="mt-3 space-y-3 text-[var(--color-muted)]">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Filas processadas 24h</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-text)]">{{ page.props.stats?.executions_last_24h ?? 0 }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Falhas detectadas</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-text)]">
+                                {{ page.props.stats?.failures_last_24h ?? 0 }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Taxa de sucesso</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-success)]">
+                                {{ page.props.stats?.success_percent ?? 0 }}%
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </aside>
 

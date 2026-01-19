@@ -7,11 +7,14 @@ const props = defineProps({
     endpoint: { type: String, required: true },
     tokenConfigured: { type: Boolean, default: false },
     webhookToken: { type: String, default: '' },
+    tenantId: { type: [Number, String, null], default: null },
 });
 
 const page = usePage();
 const endpointPath = computed(() => props.endpoint || '/api/webhooks/workflows');
-const tenantId = computed(() => page.props.currentTenant?.id ?? 'Global');
+const tenantIdentifier = computed(() =>
+    props.tenantId ?? page.props.currentTenant?.id ?? 'Global'
+);
 const tokenLabel = computed(() =>
     props.webhookToken ? props.webhookToken : 'Configure o token nas Settings'
 );
@@ -32,7 +35,7 @@ const curlExample = computed(() => {
         `curl -X POST ${absoluteEndpoint.value} \\`,
         '  -H "Content-Type: application/json" \\',
         `  -H "X-WEBHOOK-TOKEN: ${tokenLabel.value}" \\`,
-        `  -H "X-Tenant-ID: ${tenantId.value}" \\`,
+        `  -H "X-Tenant-ID: ${tenantIdentifier.value}" \\`,
         "  -d '{ ... }'",
     ].join('\n');
 });
@@ -61,7 +64,7 @@ const curlExample = computed(() => {
                         <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)]">Headers obrigatórios</p>
                         <div class="mt-2 space-y-1 text-sm font-mono text-[var(--color-text)]">
                             <p>X-WEBHOOK-TOKEN: {{ tokenLabel }}</p>
-                            <p>X-Tenant-ID: {{ tenantId }}</p>
+                            <p>X-Tenant-ID: {{ tenantIdentifier }}</p>
                         </div>
                     </div>
                 </div>

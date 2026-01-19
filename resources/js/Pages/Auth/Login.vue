@@ -62,7 +62,7 @@ const submit = () => {
 
         <p class="mt-6 text-center text-xs text-[var(--color-muted)]">
             New here?
-            <Link href="/register" class="font-semibold text-[var(--color-primary)]">Create an account</Link>
+            <Link :href="route('register')" class="font-semibold text-[var(--color-primary)]">Create an account</Link>
         </p>
     </AuthLayout>
 </template>

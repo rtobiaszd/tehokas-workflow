@@ -8,6 +8,7 @@ use App\Integrations\IntegrationManager;
 use App\Integrations\Observability\Contracts\LoggerInterface;
 use App\Models\WorkflowAction;
 use App\Services\TenantSettingService;
+use Illuminate\Support\Arr;
 
 class ExecuteWorkflowAction
 {
@@ -59,8 +60,10 @@ class ExecuteWorkflowAction
             'workflow_payload' => $payload,
         ]);
 
+        $actionPayload = $this->renderActionPayload($action->payload ?? $action->config ?? [], $payload);
+
         try {
-            $driver->send($action->payload ?? $action->config ?? []);
+            $driver->send($actionPayload);
         } catch (IntegrationNotConfiguredException $exception) {
             $this->logger->info('integration_skipped', [
                 ...$context,
@@ -89,5 +92,30 @@ class ExecuteWorkflowAction
             'google_sheets_append' => 'google_sheets',
             default => null,
         };
+    }
+
+    private function renderActionPayload($value, array $context)
+    {
+        if (is_string($value)) {
+            return $this->renderTemplate($value, $context);
+        }
+
+        if (is_array($value)) {
+            return collect($value)
+                ->map(fn ($item) => $this->renderActionPayload($item, $context))
+                ->all();
+        }
+
+        return $value;
+    }
+
+    private function renderTemplate(string $value, array $context): string
+    {
+        return preg_replace_callback('/{{\s*([^}]+)\s*}}/', function ($matches) use ($context) {
+            $key = trim($matches[1]);
+            $replacement = Arr::get($context, $key);
+
+            return $replacement !== null ? (string) $replacement : $matches[0];
+        }, $value);
     }
 }

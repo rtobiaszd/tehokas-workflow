@@ -30,9 +30,13 @@ class SetTenantContext
         $tenantSlug = $request->header('X-Tenant-Slug');
 
         if ($tenantId) {
-            $tenant = Tenant::find($tenantId);
-        } elseif ($tenantSlug) {
-            $tenant = Tenant::where('slug', $tenantSlug)->first();
+            $tenant = ctype_digit((string) $tenantId)
+                ? Tenant::find((int) $tenantId)
+                : Tenant::where('slug', strtolower((string) $tenantId))->first();
+        }
+
+        if (! $tenant && $tenantSlug) {
+            $tenant = Tenant::where('slug', strtolower((string) $tenantSlug))->first();
         } elseif ($user?->tenant_id) {
             $tenant = Tenant::find($user->tenant_id);
         }

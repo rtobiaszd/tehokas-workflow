@@ -10,10 +10,8 @@ const props = defineProps({
 
 const page = usePage();
 const endpointPath = computed(() => props.endpoint || '/api/webhooks/workflows');
-const tenantId = computed(() => page.props.currentTenant?.id ?? 'Global');
-const tokenLabel = computed(() =>
-    props.tokenConfigured ? '************' : 'Configurar em Settings > Webhook token'
-);
+const tenantId = computed(() => 'Global');
+const tokenLabel = computed(() => '************');
 const absoluteEndpoint = computed(() => {
     const ziggyUrl = page.props.ziggy?.url ?? (typeof window !== 'undefined' ? window.location.origin : '');
     if (!ziggyUrl) {

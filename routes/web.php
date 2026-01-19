@@ -19,10 +19,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->name('register.store');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+Route::redirect('/', '/dashboard');
 
-    Route::get('/', DashboardController::class)->name('dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::post('/tenants/switch', TenantSwitchController::class)->name('tenants.switch');
 
@@ -50,6 +51,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
+    Route::get('/logs/feed', [LogController::class, 'feed'])->name('logs.feed');
     Route::get('/webhooks', [WebhookSettingsController::class, 'index'])->name('webhooks.index');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

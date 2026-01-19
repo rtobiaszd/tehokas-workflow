@@ -1,16 +1,21 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../Layouts/AppLayout.vue';
 import TriggerSelect from '../../Components/WorkflowBuilder/TriggerSelect.vue';
 import ConditionBuilder from '../../Components/WorkflowBuilder/ConditionBuilder.vue';
 import ActionBuilder from '../../Components/WorkflowBuilder/ActionBuilder.vue';
 import { useWorkflows } from '../../Composables/useWorkflows';
+import { useWorkflowFormStore } from '../../Stores/workflowFormStore';
 
 const props = defineProps({
     workflow: { type: Object, required: true },
     integrations: { type: Object, default: () => ({}) },
 });
+
+const workflowStore = useWorkflowFormStore();
+const inertiaForm = useForm({});
+const form = inertiaForm;
 
 const {
     statusOptions,
@@ -20,10 +25,7 @@ const {
     actionTemplates,
     createCondition,
     createAction,
-    mapWorkflowToForm,
 } = useWorkflows(props.integrations);
-
-const form = useForm(mapWorkflowToForm(props.workflow));
 
 const payloadValidationError = ref('');
 const integrationValidationError = ref('');
@@ -33,51 +35,56 @@ const isActionBlocked = (type) => {
     return option ? option.enabled === false || option.configured === false : false;
 };
 
+const initializeStore = () => {
+    workflowStore.initialize({
+        workflow: props.workflow,
+        integrations: props.integrations,
+    });
+};
+
+initializeStore();
+
 watch(
-    () => form.status,
-    (value) => {
-        form.is_active = value === 'active';
-    },
-    { immediate: true }
+    () => [props.workflow, props.integrations],
+    () => initializeStore(),
+    { deep: true }
 );
+
+onUnmounted(() => {
+    workflowStore.reset();
+});
 
 const submit = () => {
     payloadValidationError.value = '';
     integrationValidationError.value = '';
 
-    const hasPayloadErrors = form.conditions.some((condition) => condition.payload_error)
-        || form.actions.some((action) => action.payload_error);
+    const hasPayloadErrors = workflowStore.hasPayloadErrors.value;
 
     if (hasPayloadErrors) {
         payloadValidationError.value = 'Existem payloads invalidos. Corrija o JSON antes de salvar.';
         return;
     }
 
-    if (form.actions.some((action) => isActionBlocked(action.type))) {
+    if (workflowStore.actions.some((action) => isActionBlocked(action.type))) {
         integrationValidationError.value = 'Existem acoes com integracoes desativadas ou sem credenciais.';
         return;
     }
 
-    form.transform((data) => ({
-        ...data,
-        conditions: data.conditions.map(({ payload_text, payload_error, ...condition }) => ({
-            ...condition,
-            payload: condition.payload ?? null,
-        })),
-        actions: data.actions.map(({ payload_text, payload_error, ...action }) => ({
-            ...action,
-            payload: action.payload ?? null,
-        })),
-    })).put(`/workflows/${props.workflow.id}`);
+    inertiaForm.clearErrors();
+    inertiaForm
+        .transform(() => workflowStore.serialize())
+        .put(route('workflows.update', props.workflow.id));
 };
 
 const payloadPreview = computed(() =>
     JSON.stringify(
         {
-            name: form.name || props.workflow.name,
-            trigger: form.trigger.type === 'webhook' ? form.trigger.config.event : form.trigger.type,
-            conditions: form.conditions,
-            actions: form.actions,
+            name: workflowStore.name || props.workflow.name,
+            trigger: workflowStore.trigger.type === 'webhook'
+                ? workflowStore.trigger.config.event
+                : workflowStore.trigger.type,
+            conditions: workflowStore.conditions,
+            actions: workflowStore.actions,
         },
         null,
         2
@@ -100,7 +107,7 @@ const payloadPreview = computed(() =>
                             Ajuste regras e mantenha o fluxo alinhado com o tenant.
                         </p>
                     </div>
-                    <Link href="/workflows" class="text-sm font-semibold text-[var(--color-primary)]">
+                    <Link :href="route('workflows.index')" class="text-sm font-semibold text-[var(--color-primary)]">
                         Back to list
                     </Link>
                 </div>
@@ -109,7 +116,7 @@ const payloadPreview = computed(() =>
                     <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                         Name
                         <input
-                            v-model="form.name"
+                            v-model="workflowStore.name"
                             type="text"
                             class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                         />
@@ -118,7 +125,7 @@ const payloadPreview = computed(() =>
                     <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                         Status
                         <select
-                            v-model="form.status"
+                            v-model="workflowStore.status"
                             class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                         >
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
@@ -131,16 +138,16 @@ const payloadPreview = computed(() =>
                 <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                     Description
                     <textarea
-                        v-model="form.description"
+                        v-model="workflowStore.description"
                         rows="3"
                         class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                     ></textarea>
                 </label>
 
-                <TriggerSelect v-model="form.trigger" :options="triggerOptions" />
-                <ConditionBuilder v-model="form.conditions" :operators="operatorOptions" :create-condition="createCondition" />
+                <TriggerSelect v-model="workflowStore.trigger" :options="triggerOptions" />
+                <ConditionBuilder v-model="workflowStore.conditions" :operators="operatorOptions" :create-condition="createCondition" />
                 <ActionBuilder
-                    v-model="form.actions"
+                    v-model="workflowStore.actions"
                     :options="actionOptions"
                     :templates="actionTemplates"
                     :create-action="createAction"

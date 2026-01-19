@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'webhook.token' => \App\Http\Middleware\ValidateWebhookToken::class,
+            'resolve.tenant' => \App\Http\Middleware\ResolveTenantFromHeader::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

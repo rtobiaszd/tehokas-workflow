@@ -49,7 +49,42 @@ class HandleInertiaRequests extends Middleware
                     ])->all(),
                 ]
                 : null,
+            'stats' => $this->tenantStats(),
         ]);
+    }
+
+    private function tenantStats(): array
+    {
+        $tenant = app(TenantContext::class)->tenant();
+
+        if (! $tenant) {
+            return [
+                'executions_last_24h' => 0,
+                'failures_last_24h' => 0,
+                'success_percent' => 0,
+            ];
+        }
+
+        $cacheKey = "tenant:{$tenant->id}:stats";
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($tenant) {
+            $executions = $tenant->workflowLogs()
+                ->where('executed_at', '>=', now()->subDay())
+                ->count();
+
+            $failures = $tenant->workflowLogs()
+                ->where('executed_at', '>=', now()->subDay())
+                ->where('status', 'failed')
+                ->count();
+
+            return [
+                'executions_last_24h' => $executions,
+                'failures_last_24h' => $failures,
+                'success_percent' => $executions === 0
+                    ? 0
+                    : max(0, min(100, (int) round((($executions - $failures) / $executions) * 100))),
+            ];
+        });
     }
 
     private function navigationFor($user): array
@@ -60,7 +95,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user->isRoot()) {
             return [
-                ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+                ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
                 ['label' => 'Companies', 'href' => '/companies', 'icon' => 'office'],
                 ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
                 ['label' => 'Logs', 'href' => '/logs', 'icon' => 'log'],
@@ -71,7 +106,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user->isAdmin()) {
             return [
-                ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+                ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
                 ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
                 ['label' => 'Webhooks', 'href' => '/webhooks', 'icon' => 'webhook'],
                 ['label' => 'Logs', 'href' => '/logs', 'icon' => 'log'],
@@ -81,7 +116,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         return [
-            ['label' => 'Dashboard', 'href' => '/', 'icon' => 'grid'],
+            ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'grid'],
             ['label' => 'Workflows', 'href' => '/workflows', 'icon' => 'flows'],
             ['label' => 'Settings', 'href' => '/settings', 'icon' => 'settings'],
         ];

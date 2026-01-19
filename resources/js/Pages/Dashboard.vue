@@ -131,7 +131,7 @@ const formattedFailures = computed(() =>
                             <p class="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">Recent runs</p>
                             <h3 class="mt-2 text-lg font-semibold">Execucoes recentes</h3>
                         </div>
-                        <Link href="/logs" class="text-xs font-semibold text-[var(--color-primary)]">View logs</Link>
+                        <Link :href="route('logs.index')" class="text-xs font-semibold text-[var(--color-primary)]">View logs</Link>
                     </div>
                     <div class="mt-6 space-y-4">
                         <div

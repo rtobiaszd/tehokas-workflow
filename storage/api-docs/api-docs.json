@@ -1,0 +1,73 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Workflow Engine API",
+        "description": "API documentation for workflow webhooks and admin endpoints",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Default API Server"
+        }
+    ],
+    "paths": {
+        "/api/webhooks/workflows": {
+            "post": {
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Receives workflow events",
+                "operationId": "c0af48e42fa7f7a2c4ba22477007b98b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "event",
+                                    "data"
+                                ],
+                                "properties": {
+                                    "event": {
+                                        "type": "string",
+                                        "example": "project.status_changed"
+                                    },
+                                    "data": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Queued"
+                    },
+                    "422": {
+                        "description": "Tenant not resolved"
+                    }
+                }
+            }
+        },
+        "/swagger-ping": {
+            "get": {
+                "summary": "Swagger ping test",
+                "operationId": "7df391c924d585d6a7157a9d9eebd05a",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Webhooks",
+            "description": "Workflow webhooks"
+        }
+    ]
+}

@@ -28,7 +28,7 @@ const passwordForm = useForm({
     password_confirmation: '',
 });
 const updatePassword = () => {
-    passwordForm.put('/user/password', {
+    passwordForm.put(route('password.update'), {
         preserveScroll: true,
         onSuccess: () => {
             passwordForm.reset();
@@ -94,22 +94,29 @@ const submit = () => {
         return;
     }
 
-    form.put('/settings');
+    form.put(route('settings.update'));
+
 };
 
 const testIntegration = (integration) => {
     if (!canEdit.value) {
         return;
     }
-    router.post('/settings/integrations/test', { integration }, { preserveScroll: true });
+    router.post(route('settings.integrations.test'), { integration }, { preserveScroll: true });
+
 };
 
 const regenerateToken = () => {
     if (!canEdit.value) {
         return;
     }
-    router.post('/settings/webhook-token', {}, { preserveScroll: true });
+    router.post(
+        route('settings.webhook-token'),
+        {},
+        { preserveScroll: true }
+    );
 };
+
 
 const copyToken = async () => {
     if (!tokenPreview.value) {
@@ -167,8 +174,15 @@ const copyToken = async () => {
                 <form class="mt-6 space-y-6" @submit.prevent="submit">
                     <div v-if="activeTab === 'general'" class="space-y-6">
                         <section class="rounded-2xl border border-[var(--color-border)] bg-white p-5">
-                            <h3 class="text-sm font-semibold text-[var(--color-text)]">Notifications</h3>
-                            <p class="mt-1 text-xs text-[var(--color-muted)]">Canais de alerta para eventos criticos.</p>
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-[var(--color-text)]">Notifications</h3>
+                                    <p class="mt-1 text-xs text-[var(--color-muted)]">Canais de alerta para eventos criticos.</p>
+                                </div>
+                                <span class="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700">
+                                    Critical alerts
+                                </span>
+                            </div>
                             <div class="mt-4 grid gap-3 md:grid-cols-3">
                                 <label class="flex items-center gap-2 text-sm">
                                     <input
@@ -222,31 +236,6 @@ const copyToken = async () => {
                                         :disabled="!canEdit"
                                     />
                                     Retry on fail
-                                </label>
-                            </div>
-                        </section>
-
-                        <section class="rounded-2xl border border-[var(--color-border)] bg-white p-5">
-                            <h3 class="text-sm font-semibold text-[var(--color-text)]">Observability</h3>
-                            <p class="mt-1 text-xs text-[var(--color-muted)]">Controle de logs e monitoramento externo.</p>
-                            <div class="mt-4 grid gap-3 md:grid-cols-2">
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input
-                                        v-model="form.settings.observability.logs.enabled"
-                                        type="checkbox"
-                                        class="rounded border-[var(--color-border)]"
-                                        :disabled="!canEdit"
-                                    />
-                                    Logs estruturados
-                                </label>
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input
-                                        v-model="form.settings.observability.external.enabled"
-                                        type="checkbox"
-                                        class="rounded border-[var(--color-border)]"
-                                        :disabled="!canEdit"
-                                    />
-                                    Monitoramento externo
                                 </label>
                             </div>
                         </section>
@@ -764,7 +753,7 @@ const copyToken = async () => {
                         <p v-if="!canEdit" class="text-xs text-[var(--color-muted)]">
                             Somente administradores do tenant podem editar.
                         </p>
-                        <Link href="/webhooks" class="text-xs font-semibold text-[var(--color-primary)]">
+                        <Link :href="route('webhooks.index')" class="text-xs font-semibold text-[var(--color-primary)]">
                             Ver endpoint de webhook
                         </Link>
                     </div>

@@ -11,7 +11,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/register');
+    form.post(route('register'));
 };
 </script>
 
@@ -86,7 +86,7 @@ const submit = () => {
 
         <p class="mt-6 text-center text-xs text-[var(--color-muted)]">
             Already have an account?
-            <Link href="/login" class="font-semibold text-[var(--color-primary)]">Sign in</Link>
+            <Link :href="route('login')" class="font-semibold text-[var(--color-primary)]">Sign in</Link>
         </p>
     </AuthLayout>
 </template>

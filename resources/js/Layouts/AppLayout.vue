@@ -17,9 +17,27 @@ const companyName = computed(() => {
 
 const permissions = computed(() => page.props.permissions ?? {});
 
+const navigationRoutes = {
+    '/dashboard': 'dashboard',
+    '/companies': 'companies.index',
+    '/workflows': 'workflows.index',
+    '/logs': 'logs.index',
+    '/users': 'users.index',
+    '/settings': 'settings.index',
+    '/webhooks': 'webhooks.index',
+};
+
+const resolveNavigationHref = (href) => {
+    if (!href) {
+        return href;
+    }
+    const routeName = navigationRoutes[href];
+    return routeName ? route(routeName) : href;
+};
+
 const isActive = (href) => {
-    if (href === '/') {
-        return page.url === '/';
+    if (href === '/dashboard') {
+        return page.url === '/dashboard' || page.url === '/';
     }
 
     return page.url.startsWith(href);
@@ -31,11 +49,7 @@ const initials = computed(() => {
     return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 });
 
-/*
-const switchTenant = (event) => {
-    const value = event.target.value;
-    router.post('/tenants/switch', { tenant_id: value ? Number(value) : null });
-};*/
+
 
 const iconPaths = {
     grid: 'M3 3h8v8H3V3zm10 0h8v5h-8V3zM3 13h5v8H3v-8zm7 6h11v2H10v-2zm0-6h11v2H10v-2z',
@@ -66,7 +80,7 @@ const iconPaths = {
                     <Link
                         v-for="item in navigation"
                         :key="item.href"
-                        :href="item.href"
+                        :href="resolveNavigationHref(item.href)"
                         class="flex items-center gap-3 rounded-xl px-3 py-2 transition"
                         :class="isActive(item.href)
                             ? 'bg-[var(--color-surface-muted)] text-[var(--color-primary)]'
@@ -81,7 +95,24 @@ const iconPaths = {
 
                 <div class="mt-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-xs text-[var(--color-muted)]">
                     <p class="font-semibold text-[var(--color-text)]">Status do tenant</p>
-                    <p class="mt-2">Filas e triggers prontos para processar eventos em tempo real.</p>
+                    <div class="mt-3 space-y-3 text-[var(--color-muted)]">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Filas processadas 24h</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-text)]">{{ page.props.stats?.executions_last_24h ?? 0 }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Falhas detectadas</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-text)]">
+                                {{ page.props.stats?.failures_last_24h ?? 0 }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.2em]">Taxa de sucesso</p>
+                            <p class="mt-1 text-base font-semibold text-[var(--color-success)]">
+                                {{ page.props.stats?.success_percent ?? 0 }}%
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
@@ -97,14 +128,14 @@ const iconPaths = {
                                 <Link
                                     v-for="item in navigation"
                                     :key="item.href"
-                                    :href="item.href"
+                                    :href="resolveNavigationHref(item.href)"
                                     class="rounded-full px-3 py-2 text-[var(--color-muted)] hover:bg-[var(--color-surface-muted)]"
                                 >
                                     {{ item.label }}
                                 </Link>
                                 <Link
                                     v-if="permissions.canManageWorkflows"
-                                    href="/workflows/create"
+                                    :href="route('workflows.create')"
                                     class="rounded-full bg-[var(--color-primary)] px-3 py-2 text-white"
                                 >
                                     Novo
@@ -141,7 +172,7 @@ const iconPaths = {
                                     </p>
                                 </div>
                                 <Link
-                                    href="/logout"
+                                    :href="route('logout')"
                                     method="post"
                                     as="button"
                                     class="rounded-full border border-[var(--color-border)] px-3 py-2 text-xs font-semibold text-[var(--color-muted)] hover:bg-[var(--color-surface-muted)]"

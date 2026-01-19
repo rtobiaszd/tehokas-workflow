@@ -31,7 +31,7 @@ const tenantsList = computed(() => {
                     </div>
                     <Link
                         v-if="canCreate"
-                        href="/companies/create"
+                        :href="route('companies.create')"
                         class="rounded-2xl bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white"
                     >
                         New company
@@ -62,7 +62,7 @@ const tenantsList = computed(() => {
                         <p class="mt-2 text-xs text-[var(--color-muted)]">Slug: {{ tenant.slug }}</p>
                         <div class="mt-4 flex items-center justify-between">
                             <Link
-                                :href="`/companies/${tenant.id}/edit`"
+                                :href="route('companies.edit', tenant.id)"
                                 class="text-xs font-semibold text-[var(--color-primary)]"
                             >
                                 Manage

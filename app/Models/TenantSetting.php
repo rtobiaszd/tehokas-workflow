@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsEncryptedArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,11 +11,12 @@ class TenantSetting extends Model
 
     protected $fillable = [
         'tenant_id',
-        'settings',
+        'key',
+        'value',
     ];
 
     protected $casts = [
-        'settings' => AsEncryptedArrayObject::class,
+        'value' => 'array',
     ];
 
     public function tenant()

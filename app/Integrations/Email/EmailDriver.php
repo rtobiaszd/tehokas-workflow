@@ -6,6 +6,7 @@ use App\Integrations\Contracts\IntegrationDriverInterface;
 use App\Integrations\Contracts\IntegrationException;
 use App\Integrations\Contracts\IntegrationNotConfiguredException;
 use App\Integrations\Observability\Contracts\LoggerInterface;
+use App\Services\TenantContext;
 use App\Services\TenantSettingService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
@@ -14,7 +15,8 @@ class EmailDriver implements IntegrationDriverInterface
 {
     public function __construct(
         private TenantSettingService $tenantSettings,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private TenantContext $tenantContext
     ) {
     }
 
@@ -61,7 +63,12 @@ class EmailDriver implements IntegrationDriverInterface
         $bcc = $payload['bcc'] ?? [];
 
         // 4️⃣ Cria mailer SMTP dinâmico (POR TENANT)
-        $tenantId = $this->tenantSettings->getTenant()?->id ?? 'default';
+        $tenantId = $this->tenantContext->tenantId() ?? 'default';
+        $localDomain = rescue(
+            fn () => request()->getHost(),
+            parse_url(config('app.url', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
+            false
+        );
         $mailerName = 'tenant_smtp_' . $tenantId;
         Config::set("mail.mailers.$mailerName", [
             'transport' => 'smtp',
@@ -71,7 +78,7 @@ class EmailDriver implements IntegrationDriverInterface
             'username' => $credentials['username'],
             'password' => $credentials['password'],
             'timeout' => 15,
-            'local_domain' => request()->getHost(),
+            'local_domain' => $localDomain,
         ]);
 
         // 5️⃣ Envia o e-mail usando o mailer correto

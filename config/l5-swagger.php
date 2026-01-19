@@ -18,5 +18,22 @@ return [
             'docs' => storage_path('api-docs'),
         ],
     ],
-];
 
+    'documentations' => [
+        'default' => [
+            'api' => [
+                'title' => 'Workflow Engine API',
+            ],
+            'routes' => [
+                'api' => 'docs',
+            ],
+            'paths' => [
+                'annotations' => [
+                    base_path('app/Swagger'),
+                    base_path('app/Http/Controllers'),
+                ],
+                'docs' => storage_path('api-docs'),
+            ],
+        ],
+    ],
+];

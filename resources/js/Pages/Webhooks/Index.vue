@@ -15,8 +15,13 @@ const tokenLabel = computed(() =>
     props.tokenConfigured ? '************' : 'Configurar em Settings > Webhook token'
 );
 const absoluteEndpoint = computed(() => {
+    const ziggyUrl = page.props.ziggy?.url ?? (typeof window !== 'undefined' ? window.location.origin : '');
+    if (!ziggyUrl) {
+        return endpointPath.value;
+    }
+
     try {
-        return new URL(endpointPath.value, route('dashboard')).toString();
+        return new URL(endpointPath.value, ziggyUrl).toString();
     } catch (error) {
         return endpointPath.value;
     }
@@ -71,7 +76,7 @@ const curlExample = computed(() => {
 {{ curlExample }}
                     </pre>
                     <p class="mt-2 text-xs text-[var(--color-muted)]">
-                        Substitua <code>{{ '{{token}}' }}</code> e o corpo do payload pelos valores reais.
+                        Substitua <code v-pre>{{token}}</code> e o corpo do payload pelos valores reais.
                     </p>
                 </div>
             </section>

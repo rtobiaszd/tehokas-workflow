@@ -21,7 +21,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TenantSettingRepository::class);
         $this->app->singleton(TenantSettingService::class);
         $this->app->singleton(IntegrationManager::class);
-        $this->app->bind(LoggerInterface::class, LogLogger::class);
+        $this->app->singleton(LoggerInterface::class, function ($app) {
+            $driver = config('observability.default', 'log');
+            $class = config("observability.drivers.{$driver}", LogLogger::class);
+
+            return $app->make($class);
+        });
     }
 
     /**

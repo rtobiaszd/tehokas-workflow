@@ -1,15 +1,20 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../Layouts/AppLayout.vue';
 import TriggerSelect from '../../Components/WorkflowBuilder/TriggerSelect.vue';
 import ConditionBuilder from '../../Components/WorkflowBuilder/ConditionBuilder.vue';
 import ActionBuilder from '../../Components/WorkflowBuilder/ActionBuilder.vue';
 import { useWorkflows } from '../../Composables/useWorkflows';
+import { useWorkflowFormStore } from '../../Stores/workflowFormStore';
 
 const props = defineProps({
     integrations: { type: Object, default: () => ({}) },
 });
+
+const workflowStore = useWorkflowFormStore();
+const inertiaForm = useForm({});
+const form = inertiaForm;
 
 const {
     statusOptions,
@@ -17,77 +22,67 @@ const {
     operatorOptions,
     actionOptions,
     actionTemplates,
-    createTrigger,
     createCondition,
     createAction,
 } = useWorkflows(props.integrations);
 
-const form = useForm({
-    name: '',
-    description: '',
-    status: 'draft',
-    is_active: false,
-    trigger: createTrigger(),
-    conditions: [],
-    actions: [createAction()],
-});
-
 const payloadValidationError = ref('');
 const integrationValidationError = ref('');
+
+const initializeStore = () => {
+    workflowStore.initialize({
+        workflow: null,
+        integrations: props.integrations,
+    });
+};
+
+initializeStore();
+
+watch(
+    () => props.integrations,
+    () => initializeStore(),
+    { deep: true }
+);
+
+onUnmounted(() => {
+    workflowStore.reset();
+});
 
 const isActionBlocked = (type) => {
     const option = actionOptions.find((item) => item.value === type);
     return option ? option.enabled === false || option.configured === false : false;
 };
 
-watch(
-    () => form.status,
-    (value) => {
-        form.is_active = value === 'active';
-    },
-    { immediate: true }
-);
-
 const submit = () => {
     payloadValidationError.value = '';
     integrationValidationError.value = '';
 
-    const hasPayloadErrors = form.conditions.some((condition) => condition.payload_error)
-        || form.actions.some((action) => action.payload_error);
-
-    if (hasPayloadErrors) {
+    if (workflowStore.hasPayloadErrors.value) {
         payloadValidationError.value = 'Existem payloads invalidos. Corrija o JSON antes de salvar.';
         return;
     }
 
-    if (form.actions.some((action) => isActionBlocked(action.type))) {
+    if (workflowStore.actions.some((action) => isActionBlocked(action.type))) {
         integrationValidationError.value = 'Existem acoes com integracoes desativadas ou sem credenciais.';
         return;
     }
 
-    form.transform((data) => ({
-        ...data,
-        conditions: data.conditions.map(({ payload_text, payload_error, ...condition }) => ({
-            ...condition,
-            payload: condition.payload ?? null,
-        })),
-        actions: data.actions.map(({ payload_text, payload_error, ...action }) => ({
-            ...action,
-            payload: action.payload ?? null,
-        })),
-    })).post('/workflows');
+    inertiaForm.clearErrors();
+    inertiaForm.transform(() => workflowStore.serialize()).post('/workflows');
 };
 
 const payloadPreview = computed(() =>
     JSON.stringify(
         {
-            name: form.name || 'Project Delay Alert',
-            trigger: form.trigger.type === 'webhook' ? form.trigger.config.event : form.trigger.type,
-            conditions: form.conditions.length
-                ? form.conditions
+            name: workflowStore.name || 'Project Delay Alert',
+            trigger: workflowStore.trigger.type === 'webhook'
+                ? workflowStore.trigger.config.event
+                : workflowStore.trigger.type,
+            conditions: workflowStore.conditions.length
+                ? workflowStore.conditions
                 : [{ field: 'new_status', operator: '=', value: 'Delayed' }],
-            actions: form.actions.length
-                ? form.actions
+            actions: workflowStore.actions.length
+                ? workflowStore.actions
                 : [
                       {
                           type: 'send_email',
@@ -127,7 +122,7 @@ const payloadPreview = computed(() =>
                     <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                         Name
                         <input
-                            v-model="form.name"
+                            v-model="workflowStore.name"
                             type="text"
                             class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                             placeholder="Project Delay Alert"
@@ -137,7 +132,7 @@ const payloadPreview = computed(() =>
                     <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                         Status
                         <select
-                            v-model="form.status"
+                            v-model="workflowStore.status"
                             class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                         >
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
@@ -150,17 +145,17 @@ const payloadPreview = computed(() =>
                 <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                     Description
                     <textarea
-                        v-model="form.description"
+                        v-model="workflowStore.description"
                         rows="3"
                         class="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm"
                         placeholder="Explain the business goal for this workflow."
                     ></textarea>
                 </label>
 
-                <TriggerSelect v-model="form.trigger" :options="triggerOptions" />
-                <ConditionBuilder v-model="form.conditions" :operators="operatorOptions" :create-condition="createCondition" />
+                <TriggerSelect v-model="workflowStore.trigger" :options="triggerOptions" />
+                <ConditionBuilder v-model="workflowStore.conditions" :operators="operatorOptions" :create-condition="createCondition" />
                 <ActionBuilder
-                    v-model="form.actions"
+                    v-model="workflowStore.actions"
                     :options="actionOptions"
                     :templates="actionTemplates"
                     :create-action="createAction"

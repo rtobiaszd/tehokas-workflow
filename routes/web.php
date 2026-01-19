@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
+    Route::get('/logs/feed', [LogController::class, 'feed'])->name('logs.feed');
     Route::get('/webhooks', [WebhookSettingsController::class, 'index'])->name('webhooks.index');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

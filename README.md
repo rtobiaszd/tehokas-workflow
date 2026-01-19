@@ -88,3 +88,7 @@ Execute:
 - `php artisan test`
 
 Os testes de webhook ficam em `tests/Feature/WebhookTest.php`.
+
+## Documentacao tecnica
+
+Consulte o arquivo `ARCHITECTURE.md` para entender as decisoes de arquitetura (multi-tenancy, fila, cache, observabilidade e UI) e o pipeline de CI/CD.

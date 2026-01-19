@@ -1,4 +1,15 @@
 <script setup>
+import PayloadEditor from './PayloadEditor.vue';
+
+const FIELD_SUGGESTIONS = [
+    'event',
+    'data.project_id',
+    'data.project_name',
+    'data.old_status',
+    'data.new_status',
+    'data.manager_email',
+];
+
 const props = defineProps({
     modelValue: { type: Array, required: true },
     options: { type: Array, default: () => [] },
@@ -7,12 +18,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
-
-const payloadPlaceholder = `{
-  "field": "status",
-  "operator": "equals",
-  "value": "Delayed"
-}`;
 
 const addAction = () => {
     emit('update:modelValue', [...props.modelValue, props.createAction()]);
@@ -32,23 +37,23 @@ const updateActionConfig = (index, patch) => {
     emit('update:modelValue', next);
 };
 
-const updatePayload = (index, value) => {
-    const trimmed = value.trim();
+const updatePayloadState = (index, { payload, raw, error }) => {
     const next = props.modelValue.map((action, idx) => {
         if (idx !== index) {
             return action;
         }
 
-        if (!trimmed) {
-            return { ...action, payload: null, payload_text: value, payload_error: '' };
-        }
-
-        try {
-            const parsed = JSON.parse(trimmed);
-            return { ...action, payload: parsed, payload_text: value, payload_error: '' };
-        } catch (error) {
-            return { ...action, payload_text: value, payload_error: 'JSON invalido. Verifique o formato.' };
-        }
+        return {
+            ...action,
+            payload: payload !== undefined ? payload ?? null : action.payload ?? null,
+            payload_text:
+                raw !== undefined
+                    ? raw
+                    : payload
+                        ? JSON.stringify(payload, null, 2)
+                        : action.payload_text ?? '',
+            payload_error: error ?? '',
+        };
     });
 
     emit('update:modelValue', next);
@@ -61,6 +66,18 @@ const updateActionType = (index, type) => {
 
 const removeAction = (index) => {
     emit('update:modelValue', props.modelValue.filter((_, idx) => idx !== index));
+};
+
+const moveAction = (index, direction) => {
+    const destination = index + direction;
+    if (destination < 0 || destination >= props.modelValue.length) {
+        return;
+    }
+
+    const next = [...props.modelValue];
+    const [removed] = next.splice(index, 1);
+    next.splice(destination, 0, removed);
+    emit('update:modelValue', next);
 };
 
 const isOptionBlocked = (type) => {
@@ -120,6 +137,24 @@ const optionsForAction = (type) => {
                         </option>
                     </select>
                     <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="rounded-full border border-[var(--color-border)] px-3 py-1 text-[10px] font-semibold uppercase text-[var(--color-muted)] disabled:opacity-40"
+                            :disabled="index === 0"
+                            title="Mover para cima"
+                            @click="moveAction(index, -1)"
+                        >
+                            &uarr;
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-full border border-[var(--color-border)] px-3 py-1 text-[10px] font-semibold uppercase text-[var(--color-muted)] disabled:opacity-40"
+                            :disabled="index === modelValue.length - 1"
+                            title="Mover para baixo"
+                            @click="moveAction(index, 1)"
+                        >
+                            &darr;
+                        </button>
                         <button
                             type="button"
                             class="rounded-full border border-[var(--color-border)] px-3 py-1 text-[10px] font-semibold uppercase text-[var(--color-muted)] disabled:opacity-50"
@@ -291,18 +326,17 @@ const optionsForAction = (type) => {
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
-                        Payload JSON
-                        <textarea
-                            class="mt-2 w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-mono"
-                            rows="4"
-                            :placeholder="payloadPlaceholder"
-                            :value="action.payload_text ?? ''"
-                            @input="updatePayload(index, $event.target.value)"
-                        ></textarea>
-                    </label>
-                    <p v-if="action.payload_error" class="mt-1 text-xs text-rose-600">
+                <div class="mt-4 space-y-2">
+                    <PayloadEditor
+                        :model-value="action.payload ?? null"
+                        :raw-value="action.payload_text ?? ''"
+                        label="Payload opcional para a acao"
+                        :suggested-fields="FIELD_SUGGESTIONS"
+                        @update:modelValue="(value) => updatePayloadState(index, { payload: value })"
+                        @update:rawValue="(value) => updatePayloadState(index, { raw: value })"
+                        @error="(message) => updatePayloadState(index, { error: message })"
+                    />
+                    <p v-if="action.payload_error" class="text-xs text-rose-600">
                         {{ action.payload_error }}
                     </p>
                 </div>

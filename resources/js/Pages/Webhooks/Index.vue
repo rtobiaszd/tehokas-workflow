@@ -11,7 +11,7 @@ const props = defineProps({
 
 const page = usePage();
 const endpointPath = computed(() => props.endpoint || '/api/webhooks/workflows');
-const tenantId = computed(() => 'Global');
+const tenantId = computed(() => page.props.currentTenant?.id ?? 'Global');
 const tokenLabel = computed(() =>
     props.webhookToken ? props.webhookToken : 'Configure o token nas Settings'
 );

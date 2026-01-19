@@ -28,7 +28,7 @@ const passwordForm = useForm({
     password_confirmation: '',
 });
 const updatePassword = () => {
-    passwordForm.put('/user/password', {
+    passwordForm.put(route('password.update'), {
         preserveScroll: true,
         onSuccess: () => {
             passwordForm.reset();
@@ -94,7 +94,8 @@ const submit = () => {
         return;
     }
 
-    form.put('/settings');
+    form.put(route('settings.update'));
+
 };
 
 const testIntegration = (integration) => {
@@ -770,7 +771,7 @@ const copyToken = async () => {
                         <p v-if="!canEdit" class="text-xs text-[var(--color-muted)]">
                             Somente administradores do tenant podem editar.
                         </p>
-                        <Link href="/webhooks" class="text-xs font-semibold text-[var(--color-primary)]">
+                        <Link :href="route('webhooks.index')" class="text-xs font-semibold text-[var(--color-primary)]">
                             Ver endpoint de webhook
                         </Link>
                     </div>

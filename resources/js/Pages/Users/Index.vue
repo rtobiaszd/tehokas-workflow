@@ -25,7 +25,7 @@ const usersList = computed(() => props.users?.data ?? []);
                     </div>
                     <Link
                         v-if="canCreate"
-                        href="/users/create"
+                        :href="route('users.create')"
                         class="rounded-2xl bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white"
                     >
                         New user

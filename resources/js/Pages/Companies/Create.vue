@@ -29,7 +29,7 @@ const submit = () => {
                             Crie um novo tenant e defina seu status.
                         </p>
                     </div>
-                    <Link href="/companies" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
+                    <Link :href="route('companies.index')" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
                 </div>
 
                 <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">

@@ -55,7 +55,7 @@ const emit = defineEmits(['toggle']);
             </button>
             <Link
                 v-if="canManage"
-                :href="`/workflows/${workflow.id}/edit`"
+                :href="route('workflows.edit', workflow.id)"
                 class="text-xs font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]"
             >
                 Edit

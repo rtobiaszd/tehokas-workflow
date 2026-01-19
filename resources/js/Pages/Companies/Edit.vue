@@ -14,7 +14,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(`/companies/${props.tenant.id}`);
+    form.put(route('companies.update', props.tenant.id));
 };
 </script>
 
@@ -33,7 +33,7 @@ const submit = () => {
                             Ajuste os dados da empresa.
                         </p>
                     </div>
-                    <Link href="/companies" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
+                    <Link :href="route('companies.index')" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
                 </div>
 
                 <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">

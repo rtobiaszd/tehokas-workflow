@@ -37,7 +37,7 @@ const submit = () => {
                             Crie um novo usuario e atribua permissao.
                         </p>
                     </div>
-                    <Link href="/users" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
+                    <Link :href="route('users.index')" class="text-sm font-semibold text-[var(--color-primary)]">Back</Link>
                 </div>
 
                 <label class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">

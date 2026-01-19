@@ -116,7 +116,7 @@ const payloadPreview = computed(() =>
                             Combine triggers, conditions, and actions in a single flow.
                         </p>
                     </div>
-                    <Link href="/workflows" class="text-sm font-semibold text-[var(--color-primary)]">
+                    <Link :href="route('workflows.index')" class="text-sm font-semibold text-[var(--color-primary)]">
                         Back to list
                     </Link>
                 </div>

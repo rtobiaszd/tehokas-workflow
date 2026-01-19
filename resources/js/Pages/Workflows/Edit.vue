@@ -73,7 +73,7 @@ const submit = () => {
     inertiaForm.clearErrors();
     inertiaForm
         .transform(() => workflowStore.serialize())
-        .put(`/workflows/${props.workflow.id}`);
+        .put(route('workflows.update', props.workflow.id));
 };
 
 const payloadPreview = computed(() =>
@@ -107,7 +107,7 @@ const payloadPreview = computed(() =>
                             Ajuste regras e mantenha o fluxo alinhado com o tenant.
                         </p>
                     </div>
-                    <Link href="/workflows" class="text-sm font-semibold text-[var(--color-primary)]">
+                    <Link :href="route('workflows.index')" class="text-sm font-semibold text-[var(--color-primary)]">
                         Back to list
                     </Link>
                 </div>

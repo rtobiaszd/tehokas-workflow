@@ -28,7 +28,7 @@ const form = reactive({
 const isLoading = ref(false);
 
 const applyFilters = () => {
-    router.get('/workflows', form, {
+    router.get(route('workflows.index'), form, {
         preserveState: true,
         replace: true,
         onStart: () => {
@@ -47,7 +47,29 @@ const clearFilters = () => {
 };
 
 const toggleWorkflow = (workflowId) => {
-    router.patch(`/workflows/${workflowId}/toggle`, {}, { preserveScroll: true });
+    router.patch(route('workflows.toggle', workflowId), {}, { preserveScroll: true });
+};
+
+const paginationHref = (linkUrl) => {
+    if (!linkUrl) {
+        return null;
+    }
+
+    if (typeof window === 'undefined') {
+        return linkUrl;
+    }
+
+    try {
+        const parsed = new URL(linkUrl, window.location.origin);
+        const params = {};
+        parsed.searchParams.forEach((value, key) => {
+            params[key] = value;
+        });
+        const hasParams = Object.keys(params).length > 0;
+        return hasParams ? route('workflows.index', params) : route('workflows.index');
+    } catch (error) {
+        return linkUrl;
+    }
 };
 
 const workflowsData = computed(() => props.workflows.data ?? []);
@@ -73,7 +95,7 @@ const createdBy = (workflow) => workflow.definition?.created_by ?? 'System';
                     </div>
                     <Link
                         v-if="permissions.canManageWorkflows"
-                        href="/workflows/create"
+                        :href="route('workflows.create')"
                         class="rounded-2xl bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white"
                     >
                         New workflow
@@ -184,7 +206,7 @@ const createdBy = (workflow) => workflow.definition?.created_by ?? 'System';
                                 <td class="py-4 text-right">
                                     <Link
                                         v-if="permissions.canManageWorkflows"
-                                        :href="`/workflows/${workflow.id}/edit`"
+                                        :href="route('workflows.edit', workflow.id)"
                                         class="text-sm font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]"
                                     >
                                         Edit
@@ -230,7 +252,7 @@ const createdBy = (workflow) => workflow.definition?.created_by ?? 'System';
                             />
                             <Link
                                 v-else
-                                :href="link.url"
+                                :href="paginationHref(link.url)"
                                 v-html="link.label"
                                 class="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs font-semibold"
                                 :class="link.active

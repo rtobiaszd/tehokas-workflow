@@ -17,6 +17,24 @@ const companyName = computed(() => {
 
 const permissions = computed(() => page.props.permissions ?? {});
 
+const navigationRoutes = {
+    '/': 'dashboard',
+    '/companies': 'companies.index',
+    '/workflows': 'workflows.index',
+    '/logs': 'logs.index',
+    '/users': 'users.index',
+    '/settings': 'settings.index',
+    '/webhooks': 'webhooks.index',
+};
+
+const resolveNavigationHref = (href) => {
+    if (!href) {
+        return href;
+    }
+    const routeName = navigationRoutes[href];
+    return routeName ? route(routeName) : href;
+};
+
 const isActive = (href) => {
     if (href === '/') {
         return page.url === '/';
@@ -62,7 +80,7 @@ const iconPaths = {
                     <Link
                         v-for="item in navigation"
                         :key="item.href"
-                        :href="item.href"
+                        :href="resolveNavigationHref(item.href)"
                         class="flex items-center gap-3 rounded-xl px-3 py-2 transition"
                         :class="isActive(item.href)
                             ? 'bg-[var(--color-surface-muted)] text-[var(--color-primary)]'
@@ -93,14 +111,14 @@ const iconPaths = {
                                 <Link
                                     v-for="item in navigation"
                                     :key="item.href"
-                                    :href="item.href"
+                                    :href="resolveNavigationHref(item.href)"
                                     class="rounded-full px-3 py-2 text-[var(--color-muted)] hover:bg-[var(--color-surface-muted)]"
                                 >
                                     {{ item.label }}
                                 </Link>
                                 <Link
                                     v-if="permissions.canManageWorkflows"
-                                    href="/workflows/create"
+                                    :href="route('workflows.create')"
                                     class="rounded-full bg-[var(--color-primary)] px-3 py-2 text-white"
                                 >
                                     Novo
@@ -137,7 +155,7 @@ const iconPaths = {
                                     </p>
                                 </div>
                                 <Link
-                                    href="/logout"
+                                    :href="route('logout')"
                                     method="post"
                                     as="button"
                                     class="rounded-full border border-[var(--color-border)] px-3 py-2 text-xs font-semibold text-[var(--color-muted)] hover:bg-[var(--color-surface-muted)]"

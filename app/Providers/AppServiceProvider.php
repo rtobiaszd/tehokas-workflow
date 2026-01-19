@@ -8,6 +8,8 @@ use App\Integrations\Observability\LogLogger;
 use App\Repositories\TenantSettingRepository;
 use App\Services\TenantContext;
 use App\Services\TenantSettingService;
+use Illuminate\Support\Facades\URL;
+
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,5 +37,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+     // Força o Laravel a usar a URL base correta (subpasta)
+     URL::forceRootUrl(config('app.url'));
+
+     // Garante HTTPS correto
+     if (str_starts_with(config('app.url'), 'https://')) {
+         URL::forceScheme('https');
+     }
+
     }
 }

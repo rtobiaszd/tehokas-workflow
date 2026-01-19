@@ -18,7 +18,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/users');
+    form.post(route('users.store'));
 };
 </script>
 

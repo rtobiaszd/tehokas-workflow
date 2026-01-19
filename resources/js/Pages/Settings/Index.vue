@@ -101,15 +101,21 @@ const testIntegration = (integration) => {
     if (!canEdit.value) {
         return;
     }
-    router.post('/settings/integrations/test', { integration }, { preserveScroll: true });
+    router.post(route('settings.integrations.test'), { integration }, { preserveScroll: true });
+
 };
 
 const regenerateToken = () => {
     if (!canEdit.value) {
         return;
     }
-    router.post('/settings/webhook-token', {}, { preserveScroll: true });
+    router.post(
+        route('settings.webhook-token'),
+        {},
+        { preserveScroll: true }
+    );
 };
+
 
 const copyToken = async () => {
     if (!tokenPreview.value) {

@@ -9,8 +9,9 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/companies');
+    form.post(route('companies.store'));
 };
+
 </script>
 
 <template>

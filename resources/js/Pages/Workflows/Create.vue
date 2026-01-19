@@ -68,7 +68,10 @@ const submit = () => {
     }
 
     inertiaForm.clearErrors();
-    inertiaForm.transform(() => workflowStore.serialize()).post('/workflows');
+    inertiaForm
+        .clearErrors()
+        .transform(() => workflowStore.serialize())
+        .post(route('workflows.store'));
 };
 
 const payloadPreview = computed(() =>

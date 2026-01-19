@@ -31,11 +31,7 @@ const initials = computed(() => {
     return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 });
 
-/*
-const switchTenant = (event) => {
-    const value = event.target.value;
-    router.post('/tenants/switch', { tenant_id: value ? Number(value) : null });
-};*/
+
 
 const iconPaths = {
     grid: 'M3 3h8v8H3V3zm10 0h8v5h-8V3zM3 13h5v8H3v-8zm7 6h11v2H10v-2zm0-6h11v2H10v-2z',

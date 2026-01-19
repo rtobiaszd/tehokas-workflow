@@ -1,39 +1,47 @@
 <?php
 
 return [
-    'default' => [
-        'api' => [
-            'title' => 'Workflow Engine API',
-            'description' => 'API documentation for workflow webhooks and admin endpoints.',
-        ],
-        'routes' => [
-            'api' => 'docs',
-            'docs' => 'api/documentation',
-        ],
-        'paths' => [
-            'annotations' => [
-                base_path('app/Swagger'),
-                base_path('app/Http/Controllers'),
-            ],
-            'docs' => storage_path('api-docs'),
-        ],
-    ],
+
+    'default' => 'default',
 
     'documentations' => [
         'default' => [
             'api' => [
                 'title' => 'Workflow Engine API',
+                'description' => 'API documentation for workflow webhooks and admin endpoints.',
             ],
+
             'routes' => [
-                'api' => 'docs',
+                'api' => 'api/documentation',
             ],
+
             'paths' => [
+                'docs_json' => 'api-docs.json',
                 'annotations' => [
                     base_path('app/Swagger'),
                     base_path('app/Http/Controllers'),
                 ],
-                'docs' => storage_path('api-docs'),
             ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Security Definitions (FORA do documentations)
+    |--------------------------------------------------------------------------
+    */
+    'securityDefinitions' => [
+
+        'WebhookToken' => [
+            'type' => 'apiKey',
+            'in'   => 'header',
+            'name' => 'X-Webhook-Token',
+        ],
+
+        'bearerAuth' => [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
         ],
     ],
 ];

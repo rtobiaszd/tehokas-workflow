@@ -2,29 +2,19 @@
 
 namespace App\Swagger;
 
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Info(
- *     version="1.0.0",
- *     title="Workflow Engine API",
- *     description="API for the multi-tenant workflow automation engine."
- * )
- * @OA\Server(
- *     url="/",
- *     description="Default server"
- * )
- * @OA\SecurityScheme(
- *     securityScheme="WebhookToken",
- *     type="apiKey",
- *     in="header",
- *     name="X-WEBHOOK-TOKEN"
- * )
- * @OA\Tag(
- *     name="Webhooks",
- *     description="Workflow webhook endpoints"
- * )
- */
-class OpenApi
-{
-}
+#[OA\OpenApi(
+    info: new OA\Info(
+        title: 'Workflow Engine API',
+        version: '1.0.0',
+        description: 'API documentation for workflow webhooks and admin endpoints'
+    ),
+    servers: [
+        new OA\Server(
+            url: '/',
+            description: 'Default API Server'
+        )
+    ]
+)]
+class OpenApi {}

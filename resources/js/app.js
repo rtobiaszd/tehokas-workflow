@@ -7,7 +7,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { InertiaProgress } from '@inertiajs/progress';
 
-import { ZiggyVue } from 'ziggy-js'; // 👈 ADICIONAR
+import { ZiggyVue } from 'ziggy-js';
 
 const pinia = createPinia();
 
@@ -22,7 +22,9 @@ createInertiaApp({
 
         vueApp.use(plugin);
         vueApp.use(pinia);
-        vueApp.use(ZiggyVue); // 👈 ESSENCIAL
+
+        // 🔥 LINHA CRÍTICA
+        vueApp.use(ZiggyVue, props.initialPage.props.ziggy);
 
         vueApp.mount(el);
     },
@@ -32,4 +34,3 @@ InertiaProgress.init({
     color: '#0f766e',
     showSpinner: false,
 });
-

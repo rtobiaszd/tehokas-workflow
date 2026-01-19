@@ -17,9 +17,27 @@ class ValidateWebhookToken
         $expectedToken = (string) $this->settingService->get('integrations.webhook.token', '');
         $providedToken = (string) $request->header('X-WEBHOOK-TOKEN');
 
-        if (! $expectedToken || ! $providedToken || ! hash_equals($expectedToken, $providedToken)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+       if (! $expectedToken) {
+            return response()->json([
+                'message' => 'Unauthorized',
+                'reason' => 'webhook_token_not_configured',
+            ], 401);
         }
+
+        if (! $providedToken) {
+            return response()->json([
+                'message' => 'Unauthorized',
+                'reason' => 'webhook_token_missing',
+            ], 401);
+        }
+
+        if (! hash_equals($expectedToken, $providedToken)) {
+            return response()->json([
+                'message' => 'Unauthorized',
+                'reason' => 'invalid_webhook_token',
+            ], 401);
+        }
+
 
         return $next($request);
     }

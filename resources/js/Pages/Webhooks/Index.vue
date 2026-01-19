@@ -1,9 +1,34 @@
 <script setup>
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 const props = defineProps({
     endpoint: { type: String, required: true },
     tokenConfigured: { type: Boolean, default: false },
+});
+
+const page = usePage();
+const endpointPath = computed(() => props.endpoint || '/api/webhooks/workflows');
+const tenantId = computed(() => page.props.currentTenant?.id ?? 'Global');
+const tokenLabel = computed(() =>
+    props.tokenConfigured ? '************' : 'Configurar em Settings > Webhook token'
+);
+const absoluteEndpoint = computed(() => {
+    try {
+        return new URL(endpointPath.value, route('dashboard')).toString();
+    } catch (error) {
+        return endpointPath.value;
+    }
+});
+const curlExample = computed(() => {
+    return [
+        `curl -X POST ${absoluteEndpoint.value} \\`,
+        '  -H "Content-Type: application/json" \\',
+        '  -H "X-WEBHOOK-TOKEN: {{token}}" \\',
+        `  -H "X-Tenant-ID: ${tenantId.value}" \\`,
+        "  -d '{ ... }'",
+    ].join('\n');
 });
 </script>
 
@@ -18,24 +43,36 @@ const props = defineProps({
                 </p>
             </section>
 
-            <section class="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
+            <section class="space-y-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4">
                         <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)]">Endpoint</p>
                         <p class="mt-2 text-sm font-mono text-[var(--color-text)]">
-                            {{ endpoint }}
+                            POST {{ endpointPath }}
                         </p>
                     </div>
                     <div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)]">Token</p>
-                        <p class="mt-2 text-sm font-mono text-[var(--color-text)]">
-                            {{ tokenConfigured ? 'configurado' : 'nao configurado' }}
-                        </p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)]">Headers obrigatórios</p>
+                        <div class="mt-2 space-y-1 text-sm font-mono text-[var(--color-text)]">
+                            <p>X-WEBHOOK-TOKEN: {{ tokenLabel }}</p>
+                            <p>X-Tenant-ID: {{ tenantId }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-6 rounded-2xl border border-dashed border-[var(--color-border)] bg-white p-4 text-xs text-[var(--color-muted)]">
-                    Envie o header <strong>X-WEBHOOK-TOKEN</strong> em todas as requisicoes.
+                <div class="rounded-2xl border border-dashed border-[var(--color-border)] bg-white p-4 text-xs text-[var(--color-muted)]">
+                    Inclua sempre os headers <strong>X-WEBHOOK-TOKEN</strong> e <strong>X-Tenant-ID</strong> para que o
+                    evento seja autenticado e roteado para o tenant correto.
+                </div>
+
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)]">Exemplo de curl</p>
+                    <pre class="mt-2 overflow-x-auto rounded-2xl bg-slate-900 p-4 text-xs text-slate-100">
+{{ curlExample }}
+                    </pre>
+                    <p class="mt-2 text-xs text-[var(--color-muted)]">
+                        Substitua <code>{{ '{{token}}' }}</code> e o corpo do payload pelos valores reais.
+                    </p>
                 </div>
             </section>
         </div>
